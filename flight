@@ -1,0 +1,49 @@
+CREATE TABLE flight(flight_no INT, frm VARCHAR(20), too VARCHAR(20), distance INT,departs VARCHAR(20),arrives VARCHAR(20),price REAL,PRIMARY KEY (flight_no));
+
+CREATE TABLE aircraft(aircraft_id INT,aircraft_name VARCHAR(20),cruisingrange INT, PRIMARY KEY (aircraft_id) );
+
+CREATE TABLE employees(eid INT,ename VARCHAR(20),salary INT,PRIMARY KEY (eid));
+
+CREATE TABLE certified(eid INT,aircraft_id INT,PRIMARY KEY (eid,aircraft_id), FOREIGN KEY (eid) REFERENCES employees (eid), FOREIGN KEY (aircraft_id) REFERENCES aircraft (aircraft_id));
+
+1.Find the names of aircraft such that all pilots certified to operate them have salaries more than Rs 80,000.
+SELECT DISTINCT a.aircraft_name
+FROM aircraft a,certified c,employees e
+WHERE a.aircraft_id=c.aircraft_id
+AND c.eid=e.eid
+AND NOT EXISTS
+(SELECT *
+FROM employees e1
+WHERE e1.eid=e.eid
+AND e1.salary<80000);
+
+2. For each pilot who is certified for more than three aircrafts, find the eid and the maximum cruising range of the aircraft for which he/she is certified.
+SELECT c.eid,MAX(cruisingrange)
+FROM certified c,aircraft a
+WHERE c.aircraft_id=a.aircraft_id
+GROUP BY c.eid
+HAVING COUNT(*)>3;
+
+3. For all aircrafts with cruisingrange over 1000 kms,find the name of the aircraft and the average salary of all pilots certified for this aircraft.
+SELECT a.aircraft_id,a.aircraft_name,AVG(e.salary)
+FROM aircraft a,certified c,employees e
+WHERE a.aircraft_id=c.aircraft_id
+AND c.eid=e.eid
+AND a.cruisingrange>1000
+GROUP BY a.aircraft_id,a.aircraft_name;
+
+4. Find the names of pilots certified for some Boeing aircraft.
+SELECT distinct e.ename
+FROM employees e,aircraft a,certified c
+WHERE e.eid=c.eid
+AND c.aircraft_id=a.aircraft_id
+AND a.aircraft_name='Boeing';
+
+5. Find the aircraft_id's of all aircraft that can be used on routes from Bangalore to Delhi.
+SELECT a.aircraft_id
+FROM aircraft a
+WHERE a.cruisingrange>
+(SELECT MIN(f.distance)
+FROM flight f
+WHERE f.frm='Bangalore'
+AND f.too='Delhi')
