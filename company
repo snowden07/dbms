@@ -1,0 +1,44 @@
+CREATE TABLE DEPARTMENT(DNO VARCHAR (20),DNAME VARCHAR (20),MGRSTARTDATE DATE,Primary Key (DNO));
+
+CREATE TABLE EMPLOYEE(SSN VARCHAR (20) PRIMARY KEY,FNAME VARCHAR(20),LNAME VARCHAR(20), ADDRESS VARCHAR (20),SEX CHAR (1),SALARY INTEGER,DNO varchar(20), FOREIGN KEY (DNO) REFERENCES DEPARTMENT (DNO) ON DELETE SET NULL);
+
+ALTER TABLE DEPARTMENT ADD MGRSSN VARCHAR(10) REFERENCES EMPLOYEE (SSN);
+
+CREATE TABLE DLOCATION(DLOC VARCHAR (20),DNO varchar(20),FOREIGN KEY (DNO) REFERENCES DEPARTMENT (DNO),PRIMARY KEY (DNO, DLOC));
+
+CREATE TABLE PROJECT (PNO INTEGER PRIMARY KEY,PNAME VARCHAR(20),PLOCATION VARCHAR (20),DNO varchar(20),FOREIGN KEY (DNO) REFERENCES DEPARTMENT (DNO));
+
+CREATE TABLE WORKS_ON(HOURS INT (4),PNO integer,SSN Varchar(20),FOREIGN KEY (SSN) REFERENCES EMPLOYEE (SSN),FOREIGN KEY (PNO) REFERENCES PROJECT(PNO),PRIMARY KEY (SSN, PNO));
+
+1. Display the employee details whose salary is greater than 5 lakh , sorting the records in descending order of SSN.
+Select * from Employee where salary > 500000 order by SSN DESC;
+
+2. Display the number of employees along with project name working on each project.
+SELECT count(*), P.Pname FROM
+EMPLOYEE E, WORKS_ON W, PROJECT P
+WHERE E.SSN=W.SSN
+AND W.PNO=P.PNO
+group by Pname;
+
+3. Show the resulting salaries if every employee working on the ‘IOT’ project is given a10 percent raise.
+SELECT E.FNAME, E.LNAME, 1.1*E.SALARY AS INCR_SAL FROM
+EMPLOYEE E, WORKS_ON W, PROJECT P
+WHERE E.SSN=W.SSN
+AND W.PNO=P.PNO
+AND P.PNAME='IOT';
+
+4. Find the sum of the salaries of all employees of the ‘Dept2’ department, as well as the maximum salary, the minimum salary, and the average salary in this department
+SELECT SUM(E.SALARY), MAX(E.SALARY), MIN(E.SALARY), AVG(E.SALARY)
+FROM EMPLOYEE E, DEPARTMENT D
+WHERE E.DNO=D.DNO
+AND D.DNAME='Dept2';
+
+5. For each department that has more than two employees, retrieve the department number and the number of its employees who are making more than Rs. 6,00,000.
+SELECT D.DNO, COUNT(*)
+FROM DEPARTMENT D, EMPLOYEE E
+WHERE D.DNO=E.DNO
+AND E.SALARY>600000
+AND D.DNO IN (SELECT E1.DNO
+FROM EMPLOYEE E1 GROUP
+BY E1.DNO HAVING COUNT(*)>2)
+GROUP BY D.DNO
