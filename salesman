@@ -1,0 +1,54 @@
+CREATE TABLE SALESMAN (SALESMAN_ID INT (4), NAME VARCHAR (20), CITY VARCHAR (20), COMMISSION VARCHAR (20), PRIMARY KEY (SALESMAN_ID));
+
+CREATE TABLE CUSTOMER(CUSTOMER_ID INT (4), CUST_NAME VARCHAR (20), CITY VARCHAR (20),GRADE INT (3), Salesman_id int (4), PRIMARY KEY (CUSTOMER_ID), FOREIGN KEY (salesman_id) REFERENCES SALESMAN (SALESMAN_ID) ON DELETE SET NULL);
+
+CREATE TABLE ORDERS
+(ORD_NO INT (5), PURCHASE_AMT DECIMAL (10, 2), ORD_DATE DATE, customer_id int, salesman_id int, PRIMARY KEY (ORD_NO), FOREIGN KEY (CUSTOMER_ID) REFERENCES CUSTOMER (CUSTOMER_ID) ON DELETE CASCADE, FOREIGN KEY (SALESMAN_ID) REFERENCES SALESMAN (SALESMAN_ID) ON DELETE CASCADE);
+
+1. Count the customers with grades above Bangalore’s average.
+SELECT GRADE, COUNT(DISTINCT CUSTOMER_ID)
+FROM CUSTOMER1
+GROUP BY GRADE
+HAVING GRADE > (SELECT AVG(GRADE)
+FROM CUSTOMER1
+WHERE CITY='BANGALORE');
+
+2. Find the ID and name of all salesmen who had more than one customer.
+SELECT SALESMAN_ID, NAME
+FROM SALESMAN A
+WHERE 1 < (SELECT COUNT(*)
+FROM CUSTOMER
+WHERE SALESMAN_ID=A.SALESMAN_ID);
+
+3. List all salesmen and indicate those who have and don’t have customers in their
+cities (Use UNION operation) along with commission details.
+SELECT SALESMAN.SALESMAN_ID, NAME, CUST_NAME, COMMISSION
+FROM SALESMAN, CUSTOMER
+WHERE SALESMAN.CITY = CUSTOMER.CITY
+UNION
+SELECT SALESMAN_ID, NAME, 'NO MATCH', COMMISSION
+FROM SALESMAN
+WHERE NOT CITY = ANY
+(SELECT CITY
+FROM CUSTOMER)
+ORDER BY 2 DESC;
+
+4.
+Create a view that finds the salesman who has the customer with the highest order
+of a day.
+CREATE VIEW SALESMAN_HIGH_ORDER AS
+SELECT B.ORD_DATE, A.SALESMAN_ID, A.NAME
+FROM SALESMAN A, ORDERS B
+WHERE A.SALESMAN_ID = B.SALESMAN_ID
+AND B.PURCHASE_AMT=(SELECT MAX(PURCHASE_AMT)
+FROM ORDERS C
+WHERE C.ORD_DATE = B.ORD_DATE);
+To display the created view table records.
+
+5. Demonstrate the DELETE operation by removing salesman with id 1000. All his orders must also be deleted.
+Use ON DELETE CASCADE at the end of foreign key definitions while creating child table
+orders and then execute the following:
+Use ON DELETE SET NULL at the end of foreign key definitions while creating child table
+customers and then executes the following:
+DELETE FROM SALESMAN
+WHERE SALESMAN_ID=1000;
